@@ -1,0 +1,24 @@
+# 构建产物
+bin/
+
+# air 热重载临时目录
+tmp/
+
+# 运行时数据（本地数据库、上传附件、备份）
+/data/
+
+# 编辑器临时文件
+*.swp
+*.swo
+*~
+
+# Go
+*.test
+*.out
+coverage.txt
+
+# 前端构建产物（Bun → internal/web/dist，经 go:embed 打包）。
+# 目录保留 .gitkeep 以保证 go:embed 在未构建前端时仍可编译；
+# 占位页在 internal/web/placeholder/，由 web.Handler 兜底。
+internal/web/dist/*
+!internal/web/dist/.gitkeep

@@ -1,0 +1,89 @@
+{
+  "subject": "语文",
+  "seed_version": "1.0",
+  "edges": [
+    {
+      "parent": "字音字形",
+      "child": "词语理解",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "词语理解",
+      "child": "成语辨析",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "词语理解",
+      "child": "病句辨析",
+      "relation": "prerequisite",
+      "weight": 1.2
+    },
+    {
+      "parent": "病句辨析",
+      "child": "修辞手法",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "病句辨析",
+      "child": "表达得体",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "现代文阅读方法",
+      "child": "记叙文阅读",
+      "relation": "prerequisite",
+      "weight": 1.2
+    },
+    {
+      "parent": "现代文阅读方法",
+      "child": "说明文阅读",
+      "relation": "prerequisite",
+      "weight": 1.2
+    },
+    {
+      "parent": "现代文阅读方法",
+      "child": "议论文阅读",
+      "relation": "prerequisite",
+      "weight": 1.3
+    },
+    {
+      "parent": "文言实词",
+      "child": "文言虚词",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "文言实词",
+      "child": "文言句式",
+      "relation": "prerequisite",
+      "weight": 1.3
+    },
+    {
+      "parent": "文言句式",
+      "child": "文言文阅读",
+      "relation": "prerequisite",
+      "weight": 1.4
+    },
+    {
+      "parent": "诗歌意象",
+      "child": "古代诗歌鉴赏",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "诗歌意象",
+      "child": "现代诗歌鉴赏",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "记叙文阅读",
+      "child": "记叙文写作",
+      "relation": "prerequisite",
+      "weight": 1.5
+    },
+    {
+      "parent": "议论文阅读",
+      "child": "议论文写作",
+      "relation": "prerequisite",
+      "weight": 1.5
+    }
+  ]
+}

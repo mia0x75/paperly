@@ -1,0 +1,31 @@
+# Paperly Box — one-command startup (see TECH_STACK.md §5).
+#
+#   docker compose up -d
+#
+# Data lives in the named volume (paperly.db + assets/ + seed/ + backup/).
+# Health (Docker): GET /health inside the container, no auth required.
+
+services:
+  paperly:
+    build: .
+    image: paperly/box:latest
+    container_name: paperly-box
+    ports:
+      - "8080:8080"
+    volumes:
+      - paperly-data:/data
+    environment:
+      PAPERLY_DATA_DIR: /data
+      PAPERLY_ADDR: ":8080"
+    restart: unless-stopped
+    healthcheck:
+      # Probe port follows PAPERLY_ADDR (default 8080); /health needs no auth.
+      test: ["CMD-SHELL", "port=${PAPERLY_ADDR##*:}; wget -q -O /dev/null http://127.0.0.1:$${port:-8080}/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      # First start runs migrations + seed import; give it room before judging.
+      start_period: 60s
+      retries: 3
+
+volumes:
+  paperly-data:

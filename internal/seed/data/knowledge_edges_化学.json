@@ -1,0 +1,72 @@
+{
+  "subject": "化学",
+  "seed_version": "1.0",
+  "edges": [
+    {
+      "parent": "物质变化与反应",
+      "child": "空气与氧气",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "物质变化与反应",
+      "child": "质量守恒定律",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "分子与原子",
+      "child": "原子结构",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "分子与原子",
+      "child": "化学式与化合价",
+      "relation": "prerequisite",
+      "weight": 1.2
+    },
+    {
+      "parent": "原子结构",
+      "child": "元素与离子",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "化学式与化合价",
+      "child": "相对分子质量计算",
+      "relation": "prerequisite",
+      "weight": 1.3
+    },
+    {
+      "parent": "质量守恒定律",
+      "child": "化学方程式书写",
+      "relation": "prerequisite",
+      "weight": 1.3
+    },
+    {
+      "parent": "化学方程式书写",
+      "child": "碳和碳的氧化物",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "化学方程式书写",
+      "child": "金属活动性顺序",
+      "relation": "prerequisite",
+      "weight": 1.2
+    },
+    {
+      "parent": "常见的酸和碱",
+      "child": "酸碱盐",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "酸碱盐",
+      "child": "溶液与浓度计算",
+      "relation": "prerequisite",
+      "weight": 1.4
+    },
+    {
+      "parent": "酸碱盐",
+      "child": "化肥与粗盐提纯",
+      "relation": "prerequisite",
+      "weight": 1.3
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "subject": "道法",
+  "seed_version": "1.0",
+  "edges": [
+    {
+      "parent": "中学时代",
+      "child": "自我认识",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "自我认识",
+      "child": "友谊的天空",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "自我认识",
+      "child": "情绪管理",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "友谊的天空",
+      "child": "网上交友新时空",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "情绪管理",
+      "child": "法治意识",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "法治意识",
+      "child": "法律尊严",
+      "relation": "prerequisite",
+      "weight": 1.2
+    },
+    {
+      "parent": "法律尊严",
+      "child": "宪法意识",
+      "relation": "prerequisite",
+      "weight": 1.3
+    },
+    {
+      "parent": "宪法意识",
+      "child": "权利与义务",
+      "relation": "prerequisite",
+      "weight": 1.3
+    },
+    {
+      "parent": "权利与义务",
+      "child": "国家结构",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "国家结构",
+      "child": "经济发展",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "经济发展",
+      "child": "社会发展",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "社会发展",
+      "child": "生态文明",
+      "relation": "prerequisite"
+    }
+  ]
+}

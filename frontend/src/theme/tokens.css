@@ -1,0 +1,291 @@
+/**
+ * Paperly design tokens — shadcn/ui "new-york" + "neutral" baseline (dark-first).
+ *
+ * Visual language: dark canvas + solid cards + thin borders + minimal grayscale + radial dots.
+ *
+ * Theme mechanism: `:root` = light, `:root.dark` = dark (theme/mode.ts toggles <html>).
+ * Tailwind 4 CSS-first: `@theme inline` maps CSS variables onto Tailwind utilities
+ * (e.g. --color-background -> bg-background).
+ */
+
+/* ---------- Fonts: self-hosted woff2 (offline single binary, no CDN) ---------- */
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../assets/fonts/geist-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../assets/fonts/geist-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Jersey 15";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/jersey15-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Jersey 15";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/jersey15-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/**
+ * Material Symbols Rounded: on-demand subset (56 glyphs, 4.7KB).
+ * Glyphs are addressed by PUA codepoint (not ligature); mapping lives in components/Icon.vue.
+ */
+@font-face {
+  font-family: "Material Symbols Rounded";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("../assets/fonts/material-symbols-rounded.woff2") format("woff2");
+}
+
+@import "tailwindcss";
+
+/* ---------- Tailwind theme mapping (CSS variables -> utilities) ---------- */
+
+@theme {
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system,
+    "PingFang SC", "Microsoft YaHei", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-title: "Jersey 15", ui-sans-serif, system-ui, sans-serif;
+  --text-xs: 0.8125rem;  /* 13px */
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-control: var(--control);
+  --color-control-foreground: var(--control-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-progress: var(--progress);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+
+  /* Semantic colors (non-destructive ones drawn from the chart palette) */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+
+  /* Status-dot colors: hue-stable across light/dark (see :root / :root.dark). */
+  --color-status-pending: var(--status-pending);
+  --color-status-running: var(--status-running);
+  --color-status-done: var(--status-done);
+  --color-status-failed: var(--status-failed);
+  --color-status-skipped: var(--status-skipped);
+  --color-status-cancelled: var(--status-cancelled);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+}
+
+/* ---------- Light ---------- */
+
+/*
+ * Light theme — "layering + reduced contrast", locked in neutral/zinc grayscale
+ * (no brand blue; the one exception is `--ring`, a functional focus blue, not a
+ * brand accent — see AGENTS.md UI guardrails).
+ *
+ * The old look hurt because three things stacked:
+ *   1. `--background` and `--card` both pure white -> no depth; near-black text over
+ *      all-white (19.8:1) read harsh over long sessions.
+ *   2. `--foreground` was near-black #0a0a0a (LOGO included) — hard, not soft.
+ *   3. Border #e5e5e5 matched input, blurring control edges.
+ *
+ * Fix: canvas #fafafa (cards stay white, real depth); body #27272a (14.3:1, still
+ * AAA but gentler); muted #606069 (≥4.5:1 on canvas/card/control); border #cfcfd6
+ * vs input #b0b0ba split two levels; control deepened to #e4e4e7.
+ *
+ * Measured contrast (sRGB WCAG formula, not estimated):
+ *   body on canvas 14.27:1 / on card 14.89:1 (AAA)
+ *   muted on canvas 6.02:1 / on card 6.28:1 / on control 4.94:1 (AA+)
+ *   primary-foreground on primary 14.27:1 (AAA)
+ *   destructive on canvas 4.57:1 / on card 4.77:1 (AA)
+ */
+:root {
+  --radius: 0.625rem; /* 10px base */
+
+  --background: oklch(0.9851 0 89.9); /* #fafafa */
+  --foreground: oklch(0.2739 0.0055 286); /* #27272a */
+  --card: oklch(1 0 0); /* #ffffff */
+  --card-foreground: oklch(0.2739 0.0055 286);
+  --popover: oklch(1 0 0); /* #ffffff */
+  --popover-foreground: oklch(0.2739 0.0055 286);
+  --control: oklch(0.9207 0.004 286.3); /* #e4e4e7 */ /* control bg deepened (zinc-200) */
+  --control-foreground: oklch(0.2739 0.0055 286);
+  --primary: oklch(0.2739 0.0055 286); /* #27272a */
+  --primary-foreground: oklch(0.9851 0 89.9); /* #fafafa */
+  --secondary: oklch(0.9207 0.004 286.3); /* #e4e4e7 */
+  --secondary-foreground: oklch(0.2739 0.0055 286);
+  --muted: oklch(0.9674 0.0013 286.4); /* #f4f4f5 */
+  --muted-foreground: oklch(0.465 0.011 286); /* #606069 */
+  --accent: oklch(0.8654 0.0049 286.3); /* #d4d4d8 — hover bg slightly stronger than base */
+  --accent-foreground: oklch(0.2739 0.0055 286);
+  --destructive: oklch(0.577 0.245 27.325); /* #e7000b */
+  /* Text on destructive fills: white keeps 4.77:1 on #e7000b (AA); dark text only reaches 3.65:1. */
+  --destructive-foreground: oklch(1 0 0); /* #ffffff */
+  --border: oklch(0.8438 0.0052 286.3); /* #cfcfd6 */ /* button/card border deepened */
+  --input: oklch(0.7485 0.0078 286.3); /* #b0b0ba */ /* one notch deeper than border */
+  --ring: oklch(0.55 0.18 255); /* #026fd7 */ /* focus ring: deliberate functional blue (see AGENTS.md focus exception) */
+
+  /* Progress meters: the fill sits on a --muted track, so it must stay distinct from the
+     track in **both** themes — its own token instead of `primary`, because dark primary
+     #2a2a2a and dark muted #262626 are nearly identical (a dark-mode bar built from those
+     two is invisible). Light = the previous near-black fill, unchanged. */
+  --progress: var(--primary);
+  --sidebar: oklch(0.9674 0.0013 286.4); /* #f4f4f5 */
+  --sidebar-foreground: oklch(0.2739 0.0055 286);
+  --pattern-dot: oklch(0.849 0.004 286.3); /* #d0d0d5 */ /* dots one step heavier than #e4e4e4: visible but not loud */
+
+  --success: oklch(0.6 0.118 184.704); /* #009689 */ /* from chart-2 */
+  --warning: oklch(0.769 0.188 70.08); /* #fe9a00 */ /* from chart-5 */
+  --info: oklch(0.646 0.222 41.116); /* from chart-1 #f54900 */
+
+  /* Text on success/warning fills: white only reaches 3.67:1 / 2.13:1 on the teal/amber
+     fills, so both themes use near-black #1a1a1a (4.74:1 on #009689, 8.15:1 on #fe9a00). */
+  --success-foreground: oklch(0.2178 0 0); /* #1a1a1a */
+  --warning-foreground: oklch(0.2178 0 0); /* #1a1a1a */
+
+  /* Status-dot palette: unlike chart-* / info (which swap hue between themes), these
+     keep the SAME hue in light and dark — light is merely a deeper shade — so a status
+     color learned in one theme stays recognizable in the other. */
+  --status-pending: oklch(0.55 0.012 286); /* gray */
+  --status-running: oklch(0.55 0.18 255); /* blue */
+  --status-done: oklch(0.55 0.14 155); /* green */
+  --status-failed: oklch(0.58 0.22 25); /* red */
+  --status-skipped: oklch(0.65 0.15 70); /* amber */
+  --status-cancelled: oklch(0.55 0.22 300); /* purple */
+
+  /* Chart palette = dark theme's five hues (blue/green/amber/purple/red), so a series keeps
+     its color family when the theme switches; only lightness/chroma are tuned for the white
+     background. The old orange/teal/… light palette flipped every line to another hue on switch. */
+  --chart-1: oklch(0.488 0.243 264.376); /* #0210ca blue */
+  --chart-2: oklch(0.62 0.16 162.48); /* #005d24 green */
+  --chart-3: oklch(0.7 0.17 70.08); /* #bd3e00 amber */
+  --chart-4: oklch(0.6 0.25 303.9); /* #5d0fea purple */
+  --chart-5: oklch(0.6 0.24 16.439); /* #d70012 red */
+}
+
+/* ---------- Dark ---------- */
+
+:root.dark {
+  /* Three lightness steps: background #0f0f0f < card #151515 < control #1a1a1a, so small
+     controls keep a visible boundary on cards.
+     primary: near-white #e5e5e5 fought the solid outline variant; deep gray #2a2a2a
+     (one step above control) + near-white foreground keeps default a "black button"
+     with subtle lift. (Contrast 13.75:1, AAA.) */
+  --background: oklch(0.1684 0 0); /* #0f0f0f */
+  --foreground: oklch(0.985 0 0); /* #fafafa */
+  --card: oklch(0.1957 0 0); /* #151515 */
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.1957 0 0); /* #151515 */
+  --popover-foreground: oklch(0.985 0 0);
+  --control: oklch(0.2178 0 0); /* #1a1a1a */
+  --control-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.285 0 89.9); /* #2a2a2a */
+  --primary-foreground: oklch(0.985 0 0); /* #fafafa */
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0); /* #a1a1a1 */
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216); /* #ff6467 */
+  /* Text on dark destructive: white only reaches 2.89:1 on #ff6467, so use near-black
+     #1a1a1a (6.03:1) — the fill is light in dark mode, unlike light mode. */
+  --destructive-foreground: oklch(0.2178 0 0); /* #1a1a1a */
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.72 0.16 255); /* #59a6ff */ /* focus ring: same blue hue as light, lightened for dark contrast */
+
+  /* Dark progress fill: a neutral gray clearly lighter than the muted track (#262626) —
+     ~4.1:1, so the bar reads in dark mode where primary/#2a2a2a melts into the track. */
+  --progress: oklch(0.66 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --pattern-dot: oklch(0.31 0.008 264); /* #4a4a53 */ /* dark dots ~2.2:1 over canvas: visible texture, not glare */
+
+  --success: oklch(0.696 0.17 162.48); /* #00bc7d */ /* from chart-2 */
+  --warning: oklch(0.769 0.188 70.08); /* #fe9a00 */ /* from chart-3 */
+  --info: oklch(0.488 0.243 264.376); /* from chart-1 #1447e6 */
+
+  /* Text on dark success/warning fills: same near-black as light (7.04:1 on #00bc7d, 8.15:1 on #fe9a00). */
+  --success-foreground: oklch(0.2178 0 0); /* #1a1a1a */
+  --warning-foreground: oklch(0.2178 0 0); /* #1a1a1a */
+
+  /* Same hue as the light theme, only raised in lightness for the dark canvas. */
+  --status-pending: oklch(0.72 0.012 286); /* gray */
+  --status-running: oklch(0.72 0.16 255); /* blue */
+  --status-done: oklch(0.72 0.15 155); /* green */
+  --status-failed: oklch(0.70 0.19 25); /* red */
+  --status-skipped: oklch(0.78 0.15 70); /* amber */
+  --status-cancelled: oklch(0.72 0.19 300); /* purple */
+
+  --chart-1: oklch(0.488 0.243 264.376); /* #1447e6 blue */
+  --chart-2: oklch(0.696 0.17 162.48); /* #00bc7d green */
+  --chart-3: oklch(0.769 0.188 70.08); /* #fe9a00 amber */
+  --chart-4: oklch(0.627 0.265 303.9); /* #ad46ff purple */
+  --chart-5: oklch(0.645 0.246 16.439); /* #ff2056 red */
+}
+
+/* ---------- Base layer ---------- */
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

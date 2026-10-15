@@ -1,0 +1,39 @@
+{
+  "name": "paperly-frontend",
+  "module": "src/main.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "bun run scripts/build.ts",
+    "dev": "bun run dev-proxy.ts",
+    "test": "bun run scripts/test.ts",
+    "test:unit": "bun run scripts/test.ts unit",
+    "test:component": "bun run scripts/test.ts component",
+    "test:page": "bun run scripts/test.ts page",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/bun": "latest",
+    "happy-dom": "^20.14.5",
+    "tailwindcss": "4",
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.3.11"
+  },
+  "dependencies": {
+    "@internationalized/date": "^3.12.4",
+    "@tiptap/pm": "^3.31.4",
+    "@tiptap/starter-kit": "^3.31.4",
+    "@tiptap/vue-3": "^3.31.4",
+    "chart.js": "^4.5.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "pinia": "3",
+    "radix-vue": "^1.9.17",
+    "tailwind-merge": "^3.7.0",
+    "vue": "^3.5.43",
+    "vue-chartjs": "^5.3.4",
+    "vue-router": "4"
+  }
+}

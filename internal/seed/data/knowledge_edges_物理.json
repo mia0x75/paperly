@@ -1,0 +1,83 @@
+{
+  "subject": "物理",
+  "seed_version": "1.0",
+  "edges": [
+    {
+      "parent": "机械运动",
+      "child": "力",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "力",
+      "child": "力与运动",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "力与运动",
+      "child": "压强",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "压强",
+      "child": "浮力",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "力与运动",
+      "child": "功和机械能",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "功和机械能",
+      "child": "简单机械",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "物态变化",
+      "child": "内能",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "内能",
+      "child": "能量的转化",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "电路",
+      "child": "电流",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "电路",
+      "child": "电压",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "电阻",
+      "child": "欧姆定律",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "电流",
+      "child": "欧姆定律",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "电压",
+      "child": "欧姆定律",
+      "relation": "prerequisite",
+      "weight": 1.2
+    },
+    {
+      "parent": "欧姆定律",
+      "child": "电功率",
+      "relation": "prerequisite",
+      "weight": 1.3
+    },
+    {
+      "parent": "电功率",
+      "child": "电与磁",
+      "relation": "prerequisite"
+    }
+  ]
+}

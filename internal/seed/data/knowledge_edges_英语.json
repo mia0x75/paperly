@@ -1,0 +1,75 @@
+{
+  "subject": "英语",
+  "seed_version": "1.0",
+  "edges": [
+    {
+      "parent": "词汇基础",
+      "child": "词法与时态",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "词法与时态",
+      "child": "句子结构",
+      "relation": "prerequisite",
+      "weight": 1.2
+    },
+    {
+      "parent": "句子结构",
+      "child": "从句",
+      "relation": "prerequisite",
+      "weight": 1.3
+    },
+    {
+      "parent": "词法与时态",
+      "child": "被动语态",
+      "relation": "prerequisite",
+      "weight": 1.2
+    },
+    {
+      "parent": "从句",
+      "child": "词汇与短语辨析",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "阅读理解",
+      "child": "细节理解",
+      "relation": "prerequisite"
+    },
+    {
+      "parent": "阅读理解",
+      "child": "主旨大意",
+      "relation": "prerequisite",
+      "weight": 1.2
+    },
+    {
+      "parent": "阅读理解",
+      "child": "推断判断",
+      "relation": "prerequisite",
+      "weight": 1.2
+    },
+    {
+      "parent": "细节理解",
+      "child": "完形填空",
+      "relation": "prerequisite",
+      "weight": 1.3
+    },
+    {
+      "parent": "词汇与短语辨析",
+      "child": "完形填空",
+      "relation": "prerequisite",
+      "weight": 1.3
+    },
+    {
+      "parent": "主旨大意",
+      "child": "书面表达",
+      "relation": "prerequisite",
+      "weight": 1.4
+    },
+    {
+      "parent": "推断判断",
+      "child": "书面表达",
+      "relation": "prerequisite",
+      "weight": 1.4
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -trimpath -o ./tmp/paperly ./cmd/server"
+  bin = "./tmp/paperly"
+  include_ext = ["go"]
+  exclude_dir = ["frontend", "data", "tmp", "docs", "migrations", "poc", "testdata"]
+  delay = 1000
+  stop_on_error = true
+
+[log]
+  time = true
+
+[misc]
+  clean_on_exit = true

@@ -1,0 +1,16 @@
+{
+  "subject": "数学",
+  "seed_version": "1.0",
+  "edges": [
+    {"parent": "有理数运算", "child": "整式运算", "relation": "prerequisite"},
+    {"parent": "整式运算", "child": "一元一次方程", "relation": "prerequisite"},
+    {"parent": "整式运算", "child": "因式分解", "relation": "prerequisite"},
+    {"parent": "一元一次方程", "child": "二元一次方程组", "relation": "prerequisite"},
+    {"parent": "因式分解", "child": "分式方程", "relation": "prerequisite"},
+    {"parent": "分式方程", "child": "一元二次方程", "relation": "prerequisite"},
+    {"parent": "二元一次方程组", "child": "一次函数", "relation": "prerequisite"},
+    {"parent": "一元二次方程", "child": "二次函数", "relation": "prerequisite"},
+    {"parent": "一次函数", "child": "反比例函数", "relation": "prerequisite"},
+    {"parent": "二次函数", "child": "二次函数最值", "relation": "prerequisite", "weight": 1.5}
+  ]
+}
