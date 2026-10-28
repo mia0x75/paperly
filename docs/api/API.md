@@ -1,7 +1,7 @@
 # API 路由归属总表
 
 > **版本**：v1.0.0
-> **最后更新**：2026-10-10
+> **最后更新**：2026-10-29
 > **权威性**：本文档是 API 路径 / 鉴权归属的权威源，以各 handler 的 `RegisterRoutes` + `cmd/server/main.go` 挂载为准。
 > **去重原则**：请求响应字段见各 DTO；业务规则见 `docs/REQUIREMENTS.md`；表结构见 `docs/DATABASE_DESIGN.md`。
 
@@ -81,15 +81,16 @@
 | 10 | GET    | `/api/messages/unread-count` | 未读数（按 typ 过滤） |
 | 11 | POST   | `/api/messages/:id/read`     | 标已读（按 typ 约束） |
 | 12 | POST   | `/api/messages/read-all`     | 全标已读（按 typ 约束） |
-| 13 | GET    | `/api/subjects`              | 科目列表 |
-| 14 | POST   | `/api/subjects`              | 新增科目 |
-| 15 | PUT    | `/api/subjects/:id`          | 改科目 |
-| 16 | DELETE | `/api/subjects/:id`          | 删科目 |
-| 17 | GET    | `/api/knowledge_points`      | 知识点列表 |
-| 18 | POST   | `/api/knowledge_points`      | 新增知识点 |
-| 19 | PUT    | `/api/knowledge_points/:id`  | 改知识点 |
-| 20 | DELETE | `/api/knowledge_points/:id`  | 删知识点 |
-| 21 | GET    | `/api/metrics/storage-trend` | 存储增长趋势（`days` 缺省 30、钳制 [1,365]；缺采日不补行） |
+| 13 | DELETE | `/api/messages/:id`          | 删通知（物理删除，按 typ 约束；越权/不存在 404） |
+| 14 | GET    | `/api/subjects`              | 科目列表 |
+| 15 | POST   | `/api/subjects`              | 新增科目 |
+| 16 | PUT    | `/api/subjects/:id`          | 改科目 |
+| 17 | DELETE | `/api/subjects/:id`          | 删科目 |
+| 18 | GET    | `/api/knowledge_points`      | 知识点列表 |
+| 19 | POST   | `/api/knowledge_points`      | 新增知识点 |
+| 20 | PUT    | `/api/knowledge_points/:id`  | 改知识点 |
+| 21 | DELETE | `/api/knowledge_points/:id`  | 删知识点 |
+| 22 | GET    | `/api/metrics/storage-trend` | 存储增长趋势（`days` 缺省 30、钳制 [1,365]；缺采日不补行） |
 
 ---
 
@@ -100,8 +101,8 @@
 | 白名单 | 8 |
 | 家长专属 | 30 |
 | 孩子专属 | 1 |
-| 两端共用 | 21 |
-| **合计** | **60** |
+| 两端共用 | 22 |
+| **合计** | **61** |
 
 ---
 
@@ -116,5 +117,6 @@
 | 孩子 token 访问他人试卷详情     | 404                                     |
 | 家长 token 访问 `/api/messages` | 只看 `audience=parent`                  |
 | 孩子 token 访问 `/api/messages` | 只看 `audience=kid AND kid_id=当前孩子` |
+| 删除他人/越界的通知               | 404（不区分"不存在"与"无权限"）        |
 | 401 响应                        | 不区分"未登录"与"角色不符"              |
 

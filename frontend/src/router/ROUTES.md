@@ -1,7 +1,7 @@
 # 前端路由整理文档
 
 > **版本**：v1.0.0
-> **最后更新**：2026-10-10
+> **最后更新**：2026-10-29
 > **权威性**：本文档是前端路由 / 布局 / 守卫的权威源，以 `frontend/src/router/index.ts` 为准。
 
 > 来源：`frontend/src/router/index.ts`
@@ -19,6 +19,7 @@
 | `/exams` | `exam-list` | `pages/ExamListPage.vue` | 试卷列表 |
 | `/exams/upload` | `exam-create` | `pages/ExamCreatePage.vue` | 上传试卷（新建） |
 | `/exams/:id` | `exam-viewer` | `pages/ExamViewerPage.vue` | 试卷详情（查看/编辑） |
+| `/messages` | `messages` | `pages/MessageListPage.vue` | 通知列表（分页/删除/已读圆点） |
 | `/kids` | `kids` | `pages/KidsPage.vue` | 孩子管理 |
 | `/kids/:id` | `kid-detail` | `pages/KidDetailPage.vue` | 孩子详情 |
 | `/storage` | `storage` | `pages/settings/StoragePage.vue` | 存储设置 |
@@ -40,6 +41,7 @@
 | `/kid/exams` | `kid-exams` | `pages/ExamListPage.vue` | `audience: "kid"` | 孩子端试卷列表 |
 | `/kid/exams/upload` | `kid-exam-create` | `pages/ExamCreatePage.vue` | `audience: "kid"` | 孩子端上传试卷 |
 | `/kid/exams/:id` | `kid-exam-viewer` | `pages/ExamViewerPage.vue` | `audience: "kid"` | 孩子端试卷详情 |
+| `/kid/messages` | `kid-messages` | `pages/MessageListPage.vue` | `audience: "kid"` | 孩子端通知列表（与家长端同一页面组件） |
 | `/kid/subjects` | `kid-subjects` | `pages/settings/SubjectsPage.vue` | `audience: "kid"` | 孩子端科目（共用设置页） |
 | `/kid/knowledge-points` | `kid-knowledge-points` | `pages/settings/KnowledgePointsPage.vue` | `audience: "kid"` | 孩子端知识点（共用设置页） |
 
