@@ -150,6 +150,24 @@ func (s *MessageService) MarkAllRead(ctx context.Context, audience int, kidID in
 	return n, nil
 }
 
+// Delete removes one notification from the recipient's inbox.
+//
+// The recipient boundary is enforced twice: here (audience/kid_id pairing) and in the
+// repository's WHERE clause, so one side can never delete the other's notifications.
+// A missing / out-of-boundary id surfaces as domain.ErrNotFound (404), not a silent success.
+func (s *MessageService) Delete(ctx context.Context, id int64, audience int, kidID int64) error {
+	if err := s.audienceOf(audience, kidID); err != nil {
+		return err
+	}
+	if id <= 0 {
+		return fmt.Errorf("%w: message id must be positive (id=%d)", domain.ErrInvalidInput, id)
+	}
+	if err := s.repo.Delete(ctx, id, audience, kidID); err != nil {
+		return fmt.Errorf("delete message: %w", err)
+	}
+	return nil
+}
+
 // CreateParentNotice writes a parent notification (system-side writer only).
 //
 // Parent messages are family-level: kid_id stays NULL (the CHECK constraint). Kid

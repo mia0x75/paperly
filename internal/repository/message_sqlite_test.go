@@ -245,3 +245,46 @@ func TestMessageRepoCheckConstraintRejectsMispairedAudience(t *testing.T) {
 	})
 	require.Error(t, err, "孩子通知缺 kid_id 应被 CHECK 约束拒绝")
 }
+
+// TestMessageRepoDelete pins down the physical delete inside the recipient boundary:
+// the row is really gone afterwards, and a cross-boundary delete changes nothing.
+func TestMessageRepoDelete(t *testing.T) {
+	ctx := context.Background()
+	db := openTestDB(t)
+	repo := NewMessageRepoSQLite(db)
+
+	kidA := seedKid(t, db, "A")
+	kidB := seedKid(t, db, "B")
+
+	parentID, err := repo.Insert(ctx, newParentNotice(domain.MessageKindBackupDone, "备份完成"))
+	require.NoError(t, err)
+	aMsg, err := repo.Insert(ctx, newKidNotice(kidA, domain.MessageKindReviewDue, "A 有错题待复习"))
+	require.NoError(t, err)
+	bMsg, err := repo.Insert(ctx, newKidNotice(kidB, domain.MessageKindReviewDue, "B 有错题待复习"))
+	require.NoError(t, err)
+
+	// A parent deletes a kid-side notification: no match -> ErrNotFound, row stays.
+	require.ErrorIs(t, repo.Delete(ctx, aMsg, domain.MessageAudienceParent, 0), domain.ErrNotFound)
+
+	// Kid A deletes kid B's notification: no match -> ErrNotFound, row stays.
+	require.ErrorIs(t, repo.Delete(ctx, bMsg, domain.MessageAudienceKid, kidA), domain.ErrNotFound)
+
+	rows, err := repo.List(ctx, domain.ListMessagesFilter{Audience: domain.MessageAudienceKid, KidID: kidB, Limit: 10})
+	require.NoError(t, err)
+	require.Len(t, rows, 1, "越权删除不得改变对方的数据")
+	require.Equal(t, bMsg, rows[0].ID)
+
+	// Deleting one's own notification works, and the row is really gone.
+	require.NoError(t, repo.Delete(ctx, parentID, domain.MessageAudienceParent, 0))
+	parents, err := repo.List(ctx, domain.ListMessagesFilter{Audience: domain.MessageAudienceParent, Limit: 10})
+	require.NoError(t, err)
+	require.Empty(t, parents, "被删的通知不应再出现在列表里")
+
+	require.NoError(t, repo.Delete(ctx, aMsg, domain.MessageAudienceKid, kidA))
+	kids, err := repo.List(ctx, domain.ListMessagesFilter{Audience: domain.MessageAudienceKid, KidID: kidA, Limit: 10})
+	require.NoError(t, err)
+	require.Empty(t, kids)
+
+	// Deleting again hits nothing: ErrNotFound, not a silent success.
+	require.ErrorIs(t, repo.Delete(ctx, aMsg, domain.MessageAudienceKid, kidA), domain.ErrNotFound)
+}

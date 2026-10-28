@@ -104,6 +104,23 @@ func (r *fakeMessageRepo) MarkAllRead(_ context.Context, audience int, kidID int
 	return n, nil
 }
 
+// Delete mirrors the real repository: physical delete inside the recipient boundary,
+// no match -> domain.ErrNotFound.
+func (r *fakeMessageRepo) Delete(_ context.Context, id int64, audience int, kidID int64) error {
+	r.gotAudience, r.gotKidID = audience, kidID
+	for i, m := range r.rows {
+		if m.ID != id || m.Audience != audience {
+			continue
+		}
+		if audience == domain.MessageAudienceKid && (m.KidID == nil || *m.KidID != kidID) {
+			continue
+		}
+		r.rows = append(r.rows[:i], r.rows[i+1:]...)
+		return nil
+	}
+	return domain.ErrNotFound
+}
+
 func int64Ptr(v int64) *int64 { return &v }
 
 func newFakeMessageRepo(n int) *fakeMessageRepo {
@@ -263,3 +280,45 @@ func TestMessageServiceCreateKidNotice(t *testing.T) {
 }
 
 func (m *fakeMessageRepo) WithTx(tx domain.Tx) domain.MessageRepository { return m }
+
+// TestMessageServiceDelete covers the delete contract at the service layer:
+// the recipient boundary is validated here, and an out-of-boundary id surfaces as
+// ErrNotFound instead of a silent success.
+func TestMessageServiceDelete(t *testing.T) {
+	repo := &fakeMessageRepo{rows: []*domain.Message{
+		{ID: 1, Audience: domain.MessageAudienceParent, Title: "家长通知"},
+		{ID: 2, Audience: domain.MessageAudienceKid, KidID: int64Ptr(5), Title: "A 的"},
+		{ID: 3, Audience: domain.MessageAudienceKid, KidID: int64Ptr(9), Title: "B 的"},
+	}}
+	svc := NewMessageService(repo)
+	ctx := context.Background()
+
+	require.NoError(t, svc.Delete(ctx, 1, domain.MessageAudienceParent, 0))
+	require.Len(t, repo.rows, 2, "自己的通知应被删掉")
+	require.Equal(t, domain.MessageAudienceParent, repo.gotAudience)
+
+	// Kid A deletes kid B's notification: not found, nothing removed.
+	err := svc.Delete(ctx, 3, domain.MessageAudienceKid, 5)
+	require.ErrorIs(t, err, domain.ErrNotFound)
+	require.Len(t, repo.rows, 2, "越权删除不得生效")
+
+	// Kid A deletes its own notification: allowed.
+	require.NoError(t, svc.Delete(ctx, 2, domain.MessageAudienceKid, 5))
+	require.Len(t, repo.rows, 1)
+
+	// Missing id: ErrNotFound.
+	require.ErrorIs(t, svc.Delete(ctx, 999, domain.MessageAudienceParent, 0), domain.ErrNotFound)
+}
+
+// TestMessageServiceDeleteRejectsBadInput guards the service-side preconditions:
+// a mispaired recipient boundary and a non-positive id are input errors, not 404s.
+func TestMessageServiceDeleteRejectsBadInput(t *testing.T) {
+	svc := NewMessageService(newFakeMessageRepo(1))
+	ctx := context.Background()
+
+	require.ErrorIs(t, svc.Delete(ctx, 1, domain.MessageAudienceParent, 7), domain.ErrInvalidInput)
+	require.ErrorIs(t, svc.Delete(ctx, 1, domain.MessageAudienceKid, 0), domain.ErrInvalidInput)
+	require.ErrorIs(t, svc.Delete(ctx, 1, 3, 1), domain.ErrInvalidInput)
+	require.ErrorIs(t, svc.Delete(ctx, 0, domain.MessageAudienceParent, 0), domain.ErrInvalidInput)
+	require.ErrorIs(t, svc.Delete(ctx, -1, domain.MessageAudienceParent, 0), domain.ErrInvalidInput)
+}

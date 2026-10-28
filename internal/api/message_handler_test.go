@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/require"
 
 	"paperly/internal/domain"
+	httpmw "paperly/internal/http/middleware"
 	"paperly/internal/service"
 )
 
@@ -93,6 +95,22 @@ func (r *apiMessageRepo) MarkAllRead(_ context.Context, audience int, kidID int6
 	return n, nil
 }
 
+// Delete mirrors the real repository: physical delete inside the recipient boundary,
+// no match -> domain.ErrNotFound.
+func (r *apiMessageRepo) Delete(_ context.Context, id int64, audience int, kidID int64) error {
+	for i, m := range r.rows {
+		if m.ID != id || m.Audience != audience {
+			continue
+		}
+		if audience == domain.MessageAudienceKid && (m.KidID == nil || *m.KidID != kidID) {
+			continue
+		}
+		r.rows = append(r.rows[:i], r.rows[i+1:]...)
+		return nil
+	}
+	return domain.ErrNotFound
+}
+
 func kidPtr(v int64) *int64 { return &v }
 
 // seedAPI builds a repo double containing both parent and kid notifications.
@@ -109,6 +127,24 @@ func seedAPI() *apiMessageRepo {
 func newMessageServer(repo *apiMessageRepo) *echo.Echo {
 	e := echo.New()
 	g := e.Group("/api")
+	svc := service.NewMessageService(repo)
+	NewMessageHandler(svc).RegisterRoutes(g)
+	return e
+}
+
+// newKidMessageServer simulates a kid session: the audience / kid_id come from the
+// token claims (here: a test header), never from the request body.
+func newKidMessageServer(repo *apiMessageRepo) *echo.Echo {
+	e := echo.New()
+	g := e.Group("/api")
+	g.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c *echo.Context) error {
+			(*c).Set(string(httpmw.CtxAudience), httpmw.AudienceKid)
+			kidID, _ := strconv.ParseInt(c.Request().Header.Get("X-Test-Kid"), 10, 64)
+			(*c).Set(string(httpmw.CtxKidID), kidID)
+			return next(c)
+		}
+	})
 	svc := service.NewMessageService(repo)
 	NewMessageHandler(svc).RegisterRoutes(g)
 	return e
@@ -282,6 +318,52 @@ func TestAPIMessageListPaginationValidation(t *testing.T) {
 		require.Equal(t, http.StatusOK, status, "合法参数应 200：%s", q)
 		require.Equal(t, float64(CodeOK), resp["code"], "合法参数应 0：%s", q)
 	}
+}
+
+// TestAPIMessageDelete covers the delete contract: a notification inside the recipient
+// boundary is physically removed (200), one outside it is 404, and a malformed id is 400.
+func TestAPIMessageDelete(t *testing.T) {
+	repo := seedAPI()
+	e := newMessageServer(repo)
+
+	status, body := doJSON(t, e, http.MethodDelete, "/api/messages/1", "")
+	require.Equal(t, http.StatusOK, status)
+	require.Equal(t, float64(CodeOK), body["code"])
+	require.Len(t, repo.rows, 4, "被删的通知应真的消失")
+
+	// The kid-side notification is outside the parent's boundary: 404, row untouched.
+	status, body = doJSON(t, e, http.MethodDelete, "/api/messages/4", "")
+	require.Equal(t, http.StatusNotFound, status)
+	require.Equal(t, float64(CodeNotFound), body["code"])
+	require.Len(t, repo.rows, 4, "越权删除不得生效")
+
+	// Deleting the same id twice: the second attempt is 404 (already gone).
+	status, _ = doJSON(t, e, http.MethodDelete, "/api/messages/1", "")
+	require.Equal(t, http.StatusNotFound, status)
+
+	// A malformed id is a validation error, not a 404.
+	status, _ = doJSON(t, e, http.MethodDelete, "/api/messages/abc", "")
+	require.Equal(t, http.StatusBadRequest, status)
+}
+
+// TestAPIMessageDeleteKidBoundary: the kid side deletes only its own notifications.
+func TestAPIMessageDeleteKidBoundary(t *testing.T) {
+	repo := seedAPI()
+	e := newKidMessageServer(repo)
+
+	deleteAs := func(kidID, id string) int {
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodDelete, "/api/messages/"+id, nil)
+		req.Header.Set("X-Test-Kid", kidID)
+		e.ServeHTTP(rec, req)
+		return rec.Code
+	}
+
+	require.Equal(t, http.StatusOK, deleteAs("7", "4"), "孩子应能删自己的通知")
+	require.Equal(t, http.StatusNotFound, deleteAs("7", "5"), "孩子不得删别人的通知")
+	require.Equal(t, http.StatusNotFound, deleteAs("7", "2"), "孩子不得删家长通知")
+
+	require.Len(t, repo.rows, 4, "只有孩子 7 的那一条被删掉")
 }
 
 func (m *apiMessageRepo) WithTx(tx domain.Tx) domain.MessageRepository { return m }

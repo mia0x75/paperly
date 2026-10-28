@@ -122,3 +122,18 @@ func (r *MessageRepoSQLite) MarkAllRead(ctx context.Context, audience int, kidID
 	}
 	return n, nil
 }
+
+// Delete physically removes one notification. Uses the write pool.
+//
+// WHERE carries the recipient boundary (audience + kid_id), so a kid cannot delete another
+// kid's notification and the parent side cannot delete a kid-side row. No match (wrong
+// boundary / already deleted / missing id) -> ErrNotFound: the caller turns that into 404.
+func (r *MessageRepoSQLite) Delete(ctx context.Context, id int64, audience int, kidID int64) error {
+	where, args := audienceWhere(audience, kidID)
+	q := `DELETE FROM messages WHERE id = ? AND ` + where
+	res, err := r.writeExt().ExecContext(ctx, q, append([]any{id}, args...)...)
+	if err != nil {
+		return fmt.Errorf("delete message: %w", err)
+	}
+	return affectedOrNotFound(res, "message")
+}

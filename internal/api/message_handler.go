@@ -36,6 +36,7 @@ func (h *MessageHandler) RegisterRoutes(g *echo.Group) {
 	g.GET("/messages/unread-count", h.UnreadCount)
 	g.POST("/messages/read-all", h.MarkAllRead)
 	g.POST("/messages/:id/read", h.MarkRead)
+	g.DELETE("/messages/:id", h.Delete)
 }
 
 // List handles GET /api/messages.
@@ -147,6 +148,30 @@ func mapMessageError(c *echo.Context, err error) error {
 	case errors.Is(err, domain.ErrNotFound):
 		return fail(c, CodeNotFound, "message not found", "")
 	default:
-		return fail(c, CodeInternal, "failed to read message", "")
+		return fail(c, CodeInternal, "message operation failed", "")
 	}
+}
+
+// Delete handles DELETE /api/messages/:id (remove one notification from the inbox).
+//
+// The recipient boundary comes from the token audience, never from the request body: a
+// kid token deletes only its own notifications, a parent token only family-level ones.
+// A missing or out-of-boundary id is 404 (ErrNotFound) — not a silent success, so the
+// frontend can tell "deleted" from "never existed".
+func (h *MessageHandler) Delete(c *echo.Context) error {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || id <= 0 {
+		return fail(c, CodeValidation, "invalid message id", c.Param("id"))
+	}
+	aud := httpmw.AudienceFromCtx(c)
+	audDom := domain.MessageAudienceParent
+	kidID := int64(0)
+	if aud == httpmw.AudienceKid {
+		audDom = domain.MessageAudienceKid
+		kidID = httpmw.KidIDFromCtx(c)
+	}
+	if err := h.svc.Delete(c.Request().Context(), id, audDom, kidID); err != nil {
+		return mapMessageError(c, err)
+	}
+	return ok(c, nil)
 }

@@ -91,6 +91,12 @@ type MessageRepository interface {
 	// MarkAllRead marks all unread notifications for that boundary read, returning the affected count.
 	// Parent notifications are family-level: any parent reading marks it read for the whole family.
 	MarkAllRead(ctx context.Context, audience int, kidID int64) (int64, error)
+	// Delete physically removes one notification inside the recipient boundary; no match
+	// (unauthorized or missing) -> ErrNotFound.
+	//
+	// Physical delete (not a soft delete): a notification carries no business state beyond
+	// read/unread, so a tombstone would only bloat the table and complicate the keyset cursor.
+	Delete(ctx context.Context, id int64, audience int, kidID int64) error
 	// WithTx returns a new instance bound to tx.
 	WithTx(tx Tx) MessageRepository
 }
