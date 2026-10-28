@@ -26,7 +26,7 @@
         type="button"
         class="text-muted-foreground hover:text-foreground text-xs transition-colors disabled:opacity-50"
         :disabled="markingAll"
-        @click="onMarkAllRead"
+        @click.stop="onMarkAllRead"
       >
         {{ markingAll ? "处理中…" : "全部已读" }}
       </button>
@@ -50,6 +50,8 @@
     </div>
 
     <template v-else>
+      <!-- .stop: the panel closes on any panel click, but reading a notification is
+           not a dismissal — the dropdown stays open so the dot visibly turns gray. -->
       <button
         v-for="m in items"
         :key="m.id"
@@ -57,12 +59,14 @@
         role="menuitem"
         class="flex w-full items-start gap-2.5 rounded-lg px-3 py-2 text-left transition-colors"
         :class="m.is_read ? 'opacity-60' : 'hover:bg-accent hover:text-accent-foreground'"
-        @click="onOpenMessage(m)"
+        @click.stop="onOpenMessage(m)"
       >
-        <!-- Unread uses a solid dot, read occupies no space: a clicked notification should "exit" -->
+        <!-- Unread = solid dot, read = light gray dot: the item stays in place after
+             being read (the gray dot is the only change), so the bell keeps showing
+             the same six latest notifications instead of reshuffling on every click. -->
         <span
           class="mt-1.5 size-1.5 shrink-0 rounded-full"
-          :class="m.is_read ? 'bg-transparent' : 'bg-destructive'"
+          :class="m.is_read ? 'bg-muted-foreground/40' : 'bg-destructive'"
           aria-hidden="true"
         />
         <span class="min-w-0 flex-1">
@@ -73,13 +77,16 @@
         </span>
       </button>
 
+      <!-- More than six notifications: the dropdown stays a glance, the full list
+           lives on its own page (deleting / paging through notifications needs
+           more room than a dropdown can offer). -->
       <div v-if="hasMore" class="border-t border-border/50 pt-1">
         <button
           type="button"
           class="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex w-full items-center justify-center gap-1 rounded-lg px-3 py-2 text-xs transition-colors"
-          @click="loadMore"
+          @click="goToAll"
         >
-          <Icon name="expand_more" :size="14" />加载更多
+          <Icon name="expand_more" :size="14" />全部通知
         </button>
       </div>
     </template>
@@ -107,14 +114,19 @@ const TRIGGER =
 /**
  * MessageBell -- top-bar bell: red dot badge + dropdown notification list.
  *
- * Three design trade-offs:
+ * Four design trade-offs:
  *   1. Badge and list fetch separately: every page shows the badge; pulling 50 records
  *      for 2 characters isn't worth it;
  *   2. The list loads only on first open (fetching on mount would fire on every page);
- *   3. Clicking an item = mark read + remove: the bell is a pending queue, and a read
- *      item left in place looks like nothing happened.
+ *   3. The dropdown shows only the latest BELL_LIMIT notifications — it is a glance,
+ *      not an inbox. More than that goes to the full list page ("全部通知");
+ *   4. Clicking an item = mark read (the dot turns gray in place): the notification
+ *      stays where it was, so reading one doesn't reshuffle the list under the cursor.
  */
-const LIMIT = 20;
+const BELL_LIMIT = 6;
+
+/** Target of the "全部通知" entry; the parent / kid variant points at its own list page. */
+const props = withDefaults(defineProps<{ allTo?: string }>(), { allTo: "/messages" });
 
 /** Router is optional (page-level tests mount without one): inject(routerKey, null)
  *  avoids useRouter()'s "injection not found" warning. */
@@ -123,22 +135,17 @@ const router = inject(routerKey, null);
 const items = ref<MessageSummary[]>([]);
 const unreadCount = ref(0);
 const hasMore = ref(false);
-const nextCursor = ref(0);
 const loading = ref(false);
 const markingAll = ref(false);
 const error = ref("");
 let loaded = false;
 
-async function load(append = false): Promise<void> {
+async function load(): Promise<void> {
   loading.value = true;
   error.value = "";
   try {
-    const res = await messageApi.list({
-      cursor: append ? nextCursor.value : 0,
-      limit: LIMIT,
-    });
-    items.value = append ? [...items.value, ...res.items] : res.items;
-    nextCursor.value = res.next_cursor;
+    const res = await messageApi.list({ limit: BELL_LIMIT });
+    items.value = res.items;
     hasMore.value = res.has_more;
     loaded = true;
   } catch (e) {
@@ -157,31 +164,32 @@ async function refreshCount(): Promise<void> {
   }
 }
 
-/** Next page by keyset cursor (no offset). */
-function loadMore(): void {
-  void load(true);
-}
-
 function onOpenChange(open: boolean): void {
   if (open && !loaded) void load();
   if (open) void refreshCount();
 }
 
+/**
+ * Click = mark read. The item stays in the list (gray dot instead of solid one) and
+ * nothing else happens: the dropdown is a triage surface, the deep link belongs to
+ * the full list page.
+ */
 async function onOpenMessage(m: MessageSummary): Promise<void> {
-  if (!m.is_read) {
-    // Optimistically remove locally, mark on the backend: the red dot disappears immediately.
-    unreadCount.value = Math.max(0, unreadCount.value - 1);
-    items.value = items.value.filter((x) => x.id !== m.id);
-    try {
-      await messageApi.markRead(m.id);
-    } catch {
-      // A failed mark self-corrects on the next refreshCount.
-    }
+  if (m.is_read) return;
+  // Optimistic: the dot turns gray immediately, the request only confirms it.
+  m.is_read = true;
+  unreadCount.value = Math.max(0, unreadCount.value - 1);
+  try {
+    await messageApi.markRead(m.id);
+  } catch {
+    // A failed mark self-corrects on the next refreshCount.
+    void refreshCount();
   }
-  // Jump when the notice carries a target (e.g. grade-9 reminder -> /settings/subjects).
-  if (m.link !== "") {
-    void router?.push(m.link);
-  }
+}
+
+/** Jump to the full notification list (the dropdown itself closes on panel click). */
+function goToAll(): void {
+  void router?.push(props.allTo);
 }
 
 async function onMarkAllRead(): Promise<void> {

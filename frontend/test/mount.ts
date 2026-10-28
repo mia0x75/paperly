@@ -97,6 +97,7 @@ const TEST_ROUTE_PATTERNS = [
   "/exams",
   "/exams/new",
   "/exams/:id",
+  "/messages",
   "/mastery",
   "/review",
   "/storage",
@@ -115,6 +116,7 @@ const TEST_ROUTE_PATTERNS = [
   { path: "/kid/exams", meta: { audience: "kid" } },
   { path: "/kid/exams/upload", meta: { audience: "kid" } },
   { path: "/kid/exams/:id", meta: { audience: "kid" } },
+  { path: "/kid/messages", meta: { audience: "kid" } },
   { path: "/kid/subjects", meta: { audience: "kid" } },
   { path: "/kid/knowledge-points", meta: { audience: "kid" } },
   // Standalone entry page (no nav shell), matching src/router.

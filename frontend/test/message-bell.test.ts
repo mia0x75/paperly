@@ -4,34 +4,46 @@
  * Covers fetch boundaries and interaction semantics:
  *   - mounting only fetches the unread count, not the whole notification list
  *     (the bell is on every page);
- *   - the list is only fetched on first expand;
- *   - clicking a notification = mark read + remove from the list (the red dot
- *     disappearing immediately is the only feedback);
+ *   - the list is only fetched on first expand, and asks for at most BELL_LIMIT (6);
+ *   - clicking a notification = mark read only: the row stays in place and its dot
+ *     turns gray (no jump, no removal);
+ *   - more than six notifications -> "全部通知" jumps to the full list page;
  *   - "mark all read" only affects the parent-side recipient boundary;
  *   - empty state / load failure do not crash, and a failure can be retried.
  */
 import { assert, assertEqual, assertIncludes, type TestSuite } from "./assert";
 import { flush, mountPage, type MountResult } from "./mount";
+import { h } from "vue";
 import Layout from "../src/layouts/Layout.vue";
 import MessageBell from "../src/components/MessageBell.vue";
 
 const NEWEST = "2026-10-02T10:00:00Z";
 
-/** Same shape as GET /api/messages: keyset cursor, no total. */
-const MESSAGES = {
-  items: [
-    { id: 12, kind: 6, title: "备份完成", is_read: false, created_at: NEWEST },
-    { id: 11, kind: 5, title: "有 3 道错题待复习", is_read: false, created_at: "2026-10-01T09:00:00Z" },
-    { id: 10, kind: 7, title: "备份失败", is_read: true, created_at: "2026-09-30T09:00:00Z" },
-  ],
-  next_cursor: 0,
-  has_more: false,
-};
+/** The kid-side bell: Layout passes the kid list path through the allTo prop. */
+const ChildBell = { render: () => h(MessageBell, { allTo: "/kid/messages" }) };
+
+/**
+ * Same shape as GET /api/messages: keyset cursor, no total.
+ *
+ * A factory, not a constant: clicking a notification writes is_read back into the
+ * rows it received, and a shared fixture would leak that state into the next case.
+ */
+function messages() {
+  return {
+    items: [
+      { id: 12, kind: 6, title: "备份完成", is_read: false, created_at: NEWEST },
+      { id: 11, kind: 5, title: "有 3 道错题待复习", is_read: false, created_at: "2026-10-01T09:00:00Z" },
+      { id: 10, kind: 7, title: "备份失败", is_read: true, created_at: "2026-09-30T09:00:00Z" },
+    ],
+    next_cursor: 0,
+    has_more: false,
+  };
+}
 
 function responses(over: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     "/api/messages/unread-count": { unread_count: 2 },
-    "/api/messages": MESSAGES,
+    "/api/messages": messages(),
     ...over,
   };
 }
@@ -80,8 +92,20 @@ const suite: TestSuite = {
       assertIncludes(r.text, "备份", "类型中文映射");
     }],
 
-    ["点某条通知：POST read + 从列表移除 + 角标递减", async () => {
+    ["下拉只取最新 6 条（limit=6）", async () => {
       const r = await mountPage(MessageBell, { router: false, responses: responses() });
+      await openBell(r);
+
+      const listCall = r.calls.find((c) => c.method === "GET" && c.url.includes("/api/messages?"));
+      assert(listCall !== undefined, "展开应发一次列表请求");
+      assert(
+        listCall?.url.includes("limit=6") === true,
+        `下拉只应取最新 6 条，实际 URL：${listCall?.url}`,
+      );
+    }],
+
+    ["点某条通知：POST read + 条目保留 + 圆点转灰 + 不跳转", async () => {
+      const r = await mountPage(MessageBell, { path: "/messages", responses: responses() });
       await openBell(r);
 
       clickText(r, "有 3 道错题待复习");
@@ -89,11 +113,23 @@ const suite: TestSuite = {
 
       const post = r.calls.find((c) => c.method === "POST" && c.url.includes("/11/read"));
       assert(post !== undefined, `应 POST /api/messages/11/read，实际：${JSON.stringify(r.calls)}`);
+      assertIncludes(r.text, "有 3 道错题待复习", "已读通知应留在下拉里，不移除");
       assert(
         r.doc.body.querySelector('[data-testid="unread-badge"]') !== null,
         "还剩 1 条未读，红点应仍存在",
       );
-      assertNotHasText(r, "有 3 道错题待复习");
+      assertEqual(r.navigations.length, 0, "点击通知不跳转（深链在列表页）");
+
+      // The clicked row's dot flips to the light-gray "read" color.
+      const row = Array.from(r.doc.body.querySelectorAll("button")).find((b) =>
+        (b.textContent ?? "").includes("有 3 道错题待复习"),
+      );
+      const dot = row?.querySelector("span.rounded-full");
+      assert(dot !== null && dot !== undefined, "应能找到该条通知的圆点");
+      assert(
+        (dot?.className ?? "").includes("bg-muted-foreground/40"),
+        `已读圆点应为浅灰，实际类名：${dot?.className}`,
+      );
     }],
 
     ["已读通知点了不再发请求", async () => {
@@ -142,21 +178,43 @@ const suite: TestSuite = {
       assert(!r.text.includes("通知炸了"), "重试后应脱离错误态");
     }],
 
-    ["has_more 时提供「加载更多」并带游标续拉", async () => {
+    ["has_more 时给出「全部通知」入口并跳转到列表页", async () => {
       const r = await mountPage(MessageBell, {
-        router: false,
+        path: "/messages",
         responses: responses({
-          "/api/messages": { items: MESSAGES.items, next_cursor: 10, has_more: true },
+          "/api/messages": { items: messages().items, next_cursor: 10, has_more: true },
         }),
       });
       await openBell(r);
-      assertIncludes(r.text, "加载更多", "还有更多时应能翻页");
+      assertIncludes(r.text, "全部通知", "还有更多时应给出完整列表入口");
+      assert(!r.text.includes("加载更多"), "下拉不再内联翻页");
 
-      clickText(r, "加载更多");
+      clickText(r, "全部通知");
       await flush();
+
+      assert(
+        r.navigations.includes("/messages"),
+        `应跳转到 /messages，实际：${JSON.stringify(r.navigations)}`,
+      );
+      // The dropdown is a glance: it must not pull a second page in place.
       const paged = r.calls.filter((c) => c.method === "GET" && c.url.includes("/api/messages?"));
-      assert(paged.length === 2, `应发两次列表请求，实际 ${paged.length}`);
-      assert(paged[1]?.url.includes("cursor=10") === true, `续拉应带游标，实际 ${paged[1]?.url}`);
+      assertEqual(paged.length, 1, "下拉只应请求一次列表");
+    }],
+
+    ["「全部通知」入口走 allTo（孩子端指向 /kid/messages）", async () => {
+      const child = await mountPage(ChildBell, {
+        path: "/kid/messages",
+        responses: responses({
+          "/api/messages": { items: messages().items, next_cursor: 10, has_more: true },
+        }),
+      });
+      await openBell(child);
+      clickText(child, "全部通知");
+      await flush();
+      assert(
+        child.navigations.includes("/kid/messages"),
+        `孩子端应跳转 /kid/messages，实际：${JSON.stringify(child.navigations)}`,
+      );
     }],
 
     ["铃铛触发器与相邻「设置」按钮同一套配色（BUG 回归）", async () => {
@@ -179,11 +237,5 @@ const suite: TestSuite = {
     }],
   ],
 };
-
-function assertNotHasText(r: MountResult, fragment: string): void {
-  if (r.text.includes(fragment)) {
-    throw new Error(`不应再出现「${fragment}」（实际：${r.text.slice(0, 200)}）`);
-  }
-}
 
 export default suite;

@@ -138,7 +138,7 @@ const suite: TestSuite = {
       const kidLayout = routes.find((r) => r.path === "/kid");
       assert(kidLayout !== undefined, "应存在 /kid 布局路由");
       const children = kidLayout!.children ?? [];
-      assertEqual(children.length, 6, `孩子端应有 6 条子路由，实际 ${children.length}`);
+      assertEqual(children.length, 7, `孩子端应有 7 条子路由，实际 ${children.length}`);
       for (const c of children) {
         assertEqual(
           c.meta?.audience,

@@ -13,6 +13,7 @@ import examCreatePageSuite from "./exam-create.page.test";
 import kidsPageSuite from "./kids.page.test";
 import kidDetailPageSuite from "./kid-detail.page.test";
 import kidHomePageSuite from "./kid-home.page.test";
+import messageListPageSuite from "./message-list.page.test";
 import kidTopbarSuite from "./kid-topbar.test";
 import loginPageSuite from "./login.page.test";
 import invitePageSuite from "./invite.page.test";
@@ -29,6 +30,7 @@ const SUITES: TestSuite[] = [
   kidsPageSuite,
   kidDetailPageSuite,
   kidHomePageSuite,
+  messageListPageSuite,
   kidTopbarSuite,
   loginPageSuite,
   invitePageSuite,

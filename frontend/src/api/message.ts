@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "./client";
+import { apiDelete, apiGet, apiPost } from "./client";
 import type {
   MessageListResponse,
   MessageMarkAllReadResponse,
@@ -25,5 +25,9 @@ export const messageApi = {
   },
   markAllRead(): Promise<number> {
     return apiPost<MessageMarkAllReadResponse>("/messages/read-all").then((r) => r.updated);
+  },
+  /** Physically remove one notification from the inbox (the server scopes it to the caller's own). */
+  remove(id: number): Promise<void> {
+    return apiDelete<void>(`/messages/${id}`);
   },
 };

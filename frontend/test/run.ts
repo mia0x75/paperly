@@ -19,6 +19,7 @@ import kidHomePageSuite from "./kid-home.page.test";
 import examTitleSuite from "./exam-title.test";
 import layoutHeaderSuite from "./layout-header.test";
 import messageBellSuite from "./message-bell.test";
+import messageListPageSuite from "./message-list.page.test";
 import settingsPageSuite from "./settings.page.test";
 import settingsRoutesSuite from "./settings-routes.test";
 import settingsMenuSuite from "./settings-menu.test";
@@ -61,6 +62,7 @@ const SUITES: TestSuite[] = [
   examTitleSuite,
   layoutHeaderSuite,
   messageBellSuite,
+  messageListPageSuite,
   settingsPageSuite,
   settingsRoutesSuite,
   settingsMenuSuite,

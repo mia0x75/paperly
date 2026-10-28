@@ -16,6 +16,7 @@ export const routes: RouteRecordRaw[] = [
       { path: "exams", name: "exam-list", component: () => import("../pages/ExamListPage.vue") },
       { path: "exams/upload", name: "exam-create", component: () => import("../pages/ExamCreatePage.vue") },
       { path: "exams/:id", name: "exam-viewer", component: () => import("../pages/ExamViewerPage.vue") },
+      { path: "messages", name: "messages", component: () => import("../pages/MessageListPage.vue") },
       { path: "kids", name: "kids", component: () => import("../pages/KidsPage.vue") },
       { path: "kids/:id", name: "kid-detail", component: () => import("../pages/KidDetailPage.vue") },
       { path: "storage", name: "storage", component: () => import("../pages/settings/StoragePage.vue") },
@@ -44,6 +45,7 @@ export const routes: RouteRecordRaw[] = [
       { path: "exams", name: "kid-exams", component: () => import("../pages/ExamListPage.vue"), meta: { audience: "kid" } },
       { path: "exams/upload", name: "kid-exam-create", component: () => import("../pages/ExamCreatePage.vue"), meta: { audience: "kid" } },
       { path: "exams/:id", name: "kid-exam-viewer", component: () => import("../pages/ExamViewerPage.vue"), meta: { audience: "kid" } },
+      { path: "messages", name: "kid-messages", component: () => import("../pages/MessageListPage.vue"), meta: { audience: "kid" } },
       { path: "subjects", name: "kid-subjects", component: () => import("../pages/settings/SubjectsPage.vue"), meta: { audience: "kid" } },
       {
         path: "knowledge-points",

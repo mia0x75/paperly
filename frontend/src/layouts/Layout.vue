@@ -56,7 +56,10 @@
 
           <SettingsMenu :items="isKid ? KID_MENU : undefined" />
 
-          <MessageBell />
+          <!-- The bell's "全部通知" entry points at the notification list of the
+               current side: the parent list and the kid list are the same page
+               component under two prefixes. -->
+          <MessageBell :all-to="isKid ? '/kid/messages' : '/messages'" />
 
           <!-- Theme toggle lives in the top bar: it's an adjust-anytime preference, not config
                that belongs inside settings. Same spec as the other buttons. -->
